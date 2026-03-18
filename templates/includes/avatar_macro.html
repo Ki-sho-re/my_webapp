@@ -1,0 +1,14 @@
+{% macro avatar(full_name=None, user_info=None, size="xs") -%}
+    {# pick a safe name: try full_name, then user_info.name, then session user, else empty string #}
+    {% set name = full_name or (user_info.name if user_info else '') or '' %}
+    {% set abbr = '' %}
+    {% if name %}
+        {% set abbr = frappe.utils.get_abbr(name) %}
+    {% else %}
+        {% set session_user = frappe.session.user if frappe.session and frappe.session.user else '' %}
+        {% set abbr = frappe.utils.get_abbr(session_user) if session_user else '' %}
+    {% endif %}
+    <div class="avatar avatar-{{ size }}">
+        <span class="avatar-text">{{ abbr.upper() }}</span>
+    </div>
+{%- endmacro %}

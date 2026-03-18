@@ -1,0 +1,221 @@
+import frappe
+from frappe import _
+
+# -----------------------------
+# GET ALL RECORDS
+# -----------------------------
+@frappe.whitelist()
+def get_all_leads():
+    """Return all leads with basic details."""
+    return frappe.get_all("Lead", fields=["name", "first_name", "last_name"])
+
+@frappe.whitelist()
+def get_all_prospects():
+    """Return all prospects with basic details."""
+    return frappe.get_all("Prospect", fields=["name", "lead", "status", "prospect_owner"])
+
+# -----------------------------
+# GET SINGLE RECORD
+# -----------------------------
+@frappe.whitelist()
+def get_lead_details(name):
+    return frappe.get_doc("Lead", name)
+
+
+@frappe.whitelist()
+def get_prospect_details(name):
+    """Fetch single Prospect details and include 'name1' mapped from prospect_name."""
+    doc = frappe.get_doc("Prospect", name)
+    # convert to dict so we can add custom keys that will be serialized to JSON
+    data = doc.as_dict()
+    # map backend field prospect_name to frontend name1
+    data["name1"] = data.get("prospect_name")
+    return data
+
+# -----------------------------
+# CREATE LEAD
+# -----------------------------
+@frappe.whitelist(allow_guest=True)
+def create_lead(payload):
+    """Create or update a Lead record."""
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+
+    # If name exists, update instead of duplicate
+    lead_name = payload.get("name")
+    if lead_name and frappe.db.exists("Lead", lead_name):
+        return update_lead(payload)
+
+    required = ["first_name", "email"]
+    for r in required:
+        if not payload.get(r):
+            frappe.throw(_(f"{r} is required"))
+
+    doc = frappe.get_doc({
+        "doctype": "Lead",
+        "lead_owner": payload.get("lead_owner"),
+        "email": payload.get("email"),
+        "status": payload.get("status"),
+        "first_name": payload.get("first_name"),
+        "last_name": payload.get("last_name"),
+        "phone": payload.get("phone"),
+        "mobile": payload.get("mobile"),
+        "lead_source": payload.get("lead_source"),
+        "company": payload.get("company"),
+        "annual_revenue": payload.get("annual_revenue"),
+        "industry": payload.get("industry"),
+        "website": payload.get("website"),
+        "no_of_employee": payload.get("no_of_employee"),
+        "street": payload.get("street"),
+        "state": payload.get("state"),
+        "country": payload.get("country"),
+        "city": payload.get("city"),
+        "zipcode": payload.get("zipcode"),
+        "description": payload.get("description"),
+    })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+    return {"status": "created", "name": doc.name}
+
+# -----------------------------
+# UPDATE LEAD
+# -----------------------------
+@frappe.whitelist(allow_guest=True)
+def update_lead(payload):
+    """Update existing Lead record."""
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+
+    lead_name = payload.get("name")
+    if not lead_name:
+        frappe.throw(_("Lead name is required for update"))
+
+    doc = frappe.get_doc("Lead", lead_name)
+    for key, value in payload.items():
+        if hasattr(doc, key) and key not in ["doctype", "name"]:
+            setattr(doc, key, value)
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+    return {"status": "updated", "name": doc.name}
+
+# -----------------------------
+# CREATE PROSPECT
+# -----------------------------
+@frappe.whitelist(allow_guest=True)
+def create_prospect(payload):
+    """Create Prospect from Prospect form."""
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+
+    required = ["status"]
+    for r in required:
+        if not payload.get(r):
+            frappe.throw(_(f"{r} is required"))
+
+    doc = frappe.get_doc({
+        "doctype": "Prospect",
+        "prospect_name": payload.get("name1"),
+        "email" : payload.get("email"),
+         "phone" : payload.get("phone"),
+        "status": payload.get("status"),
+        "prospect_owner": payload.get("prospect_owner"),
+    })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+    return {"status": "created", "name": doc.name}
+
+# -----------------------------
+# CONVERT LEAD TO PROSPECT
+# -----------------------------
+@frappe.whitelist(allow_guest=True)
+def convert_lead_to_prospect(lead_name):
+    """Convert a Lead to a Prospect (only if status = Converted)."""
+    lead = frappe.get_doc("Lead", lead_name)
+    if not lead:
+        frappe.throw(_("Lead not found"))
+
+    if lead.status != "Converted":
+        return {"status": "not_converted", "msg": "Lead is not yet converted"}
+
+    # Check if already exists
+    exists = frappe.get_all("Prospect", filters={"lead": lead.name})
+    if exists:
+        return {"status": "exists", "name": exists[0].name}
+
+    # Create Prospect
+    doc = frappe.get_doc({
+        "doctype": "Prospect",
+        "lead": lead.name,
+        "status": "Interested",
+        "prospect_owner": lead.lead_owner
+    })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+    return {"status": "created", "name": doc.name}
+
+
+
+
+
+# -----------------------------
+# UPDATE PROSPECT
+# -----------------------------
+@frappe.whitelist(allow_guest=True)
+def update_prospect(payload):
+    """Update existing Prospect record."""
+    if isinstance(payload, str):
+        import json
+        payload = json.loads(payload)
+
+    # Prospect 'name' is the internal document ID, not name1
+    prospect_name = payload.get("name")
+    if not prospect_name:
+        frappe.throw(_("Prospect name is required for update"))
+
+    doc = frappe.get_doc("Prospect", prospect_name)
+
+    # Update only the same fields you use in create_prospect
+    if payload.get("prospect_name"):
+        doc.prospect_name = payload.get("prospect_name")
+    if payload.get("email"):
+        doc.email = payload.get("email")
+    if payload.get("phone"):
+        doc.phone = payload.get("phone")
+    if payload.get("status"):
+        doc.status = payload.get("status")
+    if payload.get("prospect_owner"):
+        doc.prospect_owner = payload.get("prospect_owner")
+
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+    return {"status": "updated", "name": doc.name}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

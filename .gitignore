@@ -1,0 +1,14 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+my_webapp/docs/current
+node_modules/
+__pycache__/
+
+
+
+.env
+*.log
+sites/

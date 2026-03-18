@@ -1,0 +1,15 @@
+/* site.css - minimal starter */
+:root{--brand:#0b74de;--muted:#666}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter, system-ui, Arial, sans-serif;color:#111;line-height:1.5}
+.container{max-width:1100px;margin:0 auto;padding:20px}
+.site-header{background:var(--brand);color:#fff;padding:14px 0}
+.site-header .brand{font-weight:700;font-size:1.1rem;text-decoration:none;color:#fff}
+.main-nav a{color:#fff;margin-left:18px;text-decoration:none;font-weight:500}
+.hero{padding:56px 20px;text-align:center}
+.site-footer{background:#f7f7f7;padding:20px;text-align:center;color:var(--muted);margin-top:40px}
+.button{display:inline-block;padding:10px 14px;border-radius:6px;background:var(--brand);color:#fff;text-decoration:none}
+.form-row{margin-bottom:12px}
+label{display:block;font-weight:600;margin-bottom:6px}
+input[type="text"], input[type="email"], textarea{width:100%;padding:10px;border:1px solid #e0e0e0;border-radius:6px}
+@media (max-width:640px){ .main-nav{display:block;margin-top:8px} .main-nav a{display:block;margin:8px 0} }

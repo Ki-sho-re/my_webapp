@@ -1,0 +1,12 @@
+<header class="site-header">
+  <div class="container" style="display:flex;align-items:center;justify-content:space-between">
+    <a class="brand" href="/">{{ frappe.utils.get_site_name() or "My Company" }}</a>
+    <nav class="main-nav" role="navigation">
+      <a href="/">Home</a>
+      <a href="/about">About</a>
+      <a href="/lead">Get a Quote</a> <!-- this links to your Lead web form route -->
+      <a href="/contact">Contact</a>
+    </nav>
+    <button class="menu-toggle" aria-label="Toggle menu">☰</button>
+  </div>
+</header>
