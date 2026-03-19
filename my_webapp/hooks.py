@@ -4,7 +4,7 @@ app_publisher = "Kishore"
 app_description = "Anyone can Use this."
 app_email = "kishore.e@arcticturns.com"
 app_license = "MIT"
-fixtures = ["DocType","Custom Field", "Property Setter"]
+fixtures = ["DocType","Custom Field", "Property Setter", "Web Page", "Web Form"]
 
 
 
